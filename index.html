@@ -1,0 +1,98 @@
+<!--
+ * @Author: DaiLinBo
+ * @Date: 2019-09-04 11:43:16
+ * @LastEditTime: 2019-09-04 14:57:02
+ * @LastEditors: DaiLinBo
+ * @Description: 
+ -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+
+<body>
+  <script>
+    /**
+     * @description: 构造函数，构造函数中接收传递过来的名称，定义存放四个方法的promises数组
+     * @params: name传递过来的名称
+     */
+    function _LazyMan(name) {
+      this.name = name
+      // promises数组用于存放四个方法，分别存储名称、最先的等待延时（sleepFirst）、普通的等待延时（sleep）、吃方法（eat)这四个返回的成功的promise对象。
+      this.promises = []
+      let myFunc = () => {
+        console.log(`Hi! This is ${this.name}!`)
+        return Promise.resolve()
+      }
+      this.promises.push(myFunc)
+      let promise1 = Promise.resolve()
+      setTimeout(() => {
+        // 遍历promises，每一项执行完后重新给promise1赋值，达到每一项执行完之后再执行后面的。
+        this.promises.forEach(element => {
+          promise1 = promise1.then(element)
+        })
+      }, 0)
+    }
+    /**
+     * @description: 给构造函数原型上添加sleepFirst方法
+     * @params: duration 延时
+     */
+    _LazyMan.prototype.sleepFirst = function (duration) {
+      let sfpFun = () => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            console.log(`Wake up after ${duration}`)
+            resolve()
+          }, duration * 1000)
+        })
+      }
+      // 将sleepFirst方法最先输出，所以需要存放到promises数组中元素的最前面
+      this.promises.unshift(sfpFun)
+      return this
+    }
+    /**
+     * @description: 给构造函数原型上添加sleep方法
+     * @params: duration 延时
+     */
+    _LazyMan.prototype.sleep = function (duration) {
+      let spFunc = () => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            console.log(`Wake up after ${duration}`)
+            resolve()
+          }, duration * 1000)
+        })
+      }
+      this.promises.push(spFunc)
+      return this
+    }
+    /**
+     * @description: 给构造函数原型上添加eat方法
+     * @params: foods 吃的名称
+     */
+    _LazyMan.prototype.eat = function (foods) {
+      let epFunc = () => {
+        console.log(`Eat ${foods}~`)
+        return Promise.resolve()
+      }
+      this.promises.push(epFunc)
+      return this
+    }
+
+    let LazyMan = (name) => {
+      return new _LazyMan(name)
+    }
+
+    LazyMan('Hank').sleep(3).eat('dinner').sleepFirst(2)
+    // LazyMan('Hank').eat('dinner').eat('supper')
+    // LazyMan('Hank').sleepFirst(3).eat('supper')
+  </script>
+</body>
+
+</html>
